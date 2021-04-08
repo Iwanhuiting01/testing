@@ -1,0 +1,42 @@
+{% include "header.html" %}
+{% include "navbar.html" %}
+
+<div style="height: 92%" class="uk-height-medium uk-flex uk-flex-center uk-flex-middle uk-background-cover uk-light" data-src="https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/hbz-classic-movies-00-index-new-1591823486.jpg" uk-img>
+    <div style="width: 300px; padding-left: 20px; padding-right: 20px; padding-top: 15px; background:rgba(0, 0, 0, 0.7);">
+        <form>
+            <fieldset class="uk-fieldset">
+
+                <legend class="uk-legend" style="text-align: center"><a href="/">Film toevoegen</a></legend>
+
+                <div class="uk-margin">
+                    <div class="uk-inline" style="width: 100%">
+                        <span class="uk-form-icon" uk-icon="icon: youtube"></span>
+                        <input class="uk-input" type="email" placeholder="Youtube link">
+                    </div>
+                </div>
+
+                <div class="uk-margin">
+                    <div class="uk-inline" style="width: 100%">
+                        <span class="uk-form-icon" uk-icon="icon: tag"></span>
+                        <input class="uk-input" type="text" placeholder="Film naam">
+                    </div>
+                </div>
+
+                <div class="uk-margin">
+                    <div class="uk-form-controls">
+                        <span class="uk-form-icon" uk-icon="icon: tag"></span>
+                        <textarea class="uk-textarea" id="form-stacked-text" rows="5" type="text" placeholder="Beschrijving..." style="background:rgba(255, 255, 255, 0.1); color: white;"></textarea>
+                    </div>
+                </div>
+
+                <div class="uk-margin" uk-margin>
+                    <button class="uk-button uk-button-default" style="background:rgba(255, 255, 255, 0.1); width: 100%">Register</button>
+                </div>
+
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+
+{% include "footer.html" %}
