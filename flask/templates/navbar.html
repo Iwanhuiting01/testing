@@ -5,15 +5,18 @@
         <div class="uk-navbar-left">
 
             <ul class="uk-navbar-nav">
+                 {%if current_user.is_authenticated %}
                 <li>
                     <a href="#">Admin center</a>
                     <div class="uk-navbar-dropdown">
                         <ul class="uk-nav uk-navbar-dropdown-nav">
                             <li class="uk-active" style="color: black">Films</li>
                             <li><a href="/movie/create">Film toevoegen</a></li>
+                            <li><a href="/movies/edit">Films wijzigen</a></li>
                         </ul>
                     </div>
                 </li>
+                {% endif %}
             </ul>
 
 
@@ -24,6 +27,17 @@
         <div class="uk-navbar-right">
 
             <ul class="uk-navbar-nav">
+                {%if current_user.is_authenticated %}
+                <li>
+                    <a style="color: white;" href="#">{{ current_user.user_name }}</a>
+                    <div class="uk-navbar-dropdown">
+                    <ul class="uk-nav uk-navbar-dropdown-nav">
+                        <li><a href="/logout">Logout</a></li>
+                        <li><a href="#">Item</a></li>
+                    </ul>
+                </div>
+                </li>
+                {% else %}
                 <li>
                     <a href="/login">Login</a>
                 </li>
@@ -31,6 +45,7 @@
                 <li>
                     <a href="/register">register</a>
                 </li>
+                {% endif %}
             </ul>
 
         </div>

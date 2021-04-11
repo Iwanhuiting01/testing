@@ -1,0 +1,43 @@
+{% include "header.html" %}
+{% include "navbar.html" %}
+
+<div style="height: 100%" class="uk-height-medium uk-flex uk-flex-center uk-flex-middle uk-background-cover uk-light" data-src="https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/hbz-classic-movies-00-index-new-1591823486.jpg" uk-img>
+    <div class="uk-container uk-container-large uk-padding uk-overflow-auto" style="background:rgba(0, 0, 0, 0.7); color:white; height: auto">
+        <table class="uk-table uk-table-middle uk-table-divider">
+            <thead>
+                <tr>
+                    <th class="uk-width-small">Titel</th>
+                    <th>Beschrijving</th>
+                    <th>Regisseur</th>
+                    <th>Jaar</th>
+                    <th>Link</th>
+                    <th>Gemaakt door</th>
+                    <th width="10%"></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for movie in movies %}
+                <tr style="color: white">
+                    <td>{{ movie.title }}</td>
+                    <td>{{ movie.description }}</td>
+                    <td>{{ movie.director.first_name + ' ' + movie.director.last_name }}</td>
+                    <td>{{ movie.release_year }}</td>
+                    <td>{{ movie.youtube_link }}</td>
+                    <td>{{ movie.user_id }}</td>
+                    <td>
+                       <ul class="uk-iconnav">
+                            <li><a href="/edit/movie/{{ movie.id }}" uk-icon="icon: file-edit"></a></li>
+                            <li><a href="/delete/movie/{{ movie.id }}" uk-icon="icon: trash"></a></li>
+                        </ul>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+
+
+{% include "footer.html" %}

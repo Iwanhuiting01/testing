@@ -1,14 +1,17 @@
 import os
 import sqlite3
 
-from flask import Flask, render_template, g, redirect, url_for
-from flask_wtf import FlaskForm
-from wtforms import BooleanField
-from wtforms import StringField, SubmitField, PasswordField
-from wtforms.validators import DataRequired
-from flask_sqlalchemy import SQLAlchemy
+# Models
+from testing.flask.Database.models import *
+# Forms
+from testing.flask.Database.forms import *
+
+from flask import Flask, render_template, g, redirect, url_for, flash
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, login_user, login_required, current_user, logout_user
 
 basedir = os.path.abspath(os.path.join(__file__, "../.."))
+
 print(basedir)
 
 app = Flask(__name__)
@@ -16,38 +19,19 @@ app.config['SECRET_KEY'] = 'ditisgeheim'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'filmfan.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+db.init_app(app)
+
+login_manager = LoginManager()
+login_manager.login_view = 'login'
+login_manager.init_app(app)
+
 
 # Forms
 
-class InfoForm(FlaskForm):
-    email = StringField('Wat is uw email?')
-    newsletter = BooleanField('Wilt u de nieuwsbrief?')
-    submit = SubmitField('Verzenden')
-
-
-class RegisterForm(FlaskForm):
-    email = StringField('E-mail:', validators=[DataRequired()])
-    user_name = StringField('Gebruikers naam:', validators=[DataRequired()])
-    password = PasswordField('Wachtwoord:', validators=[DataRequired()])
-    submit = SubmitField('Verzenden')
-
-# Models
-class User(db.Model):
-    __tablename__ = 'users'
-
-    id = db.Column(db.Integer,primary_key=True)
-    email = db.Column(db.Text, unique=True)
-    user_name = db.Column(db.Text)
-    password = db.Column(db.Text)
-
-    def __init__(self, email, user_name, password):
-        self.email = email
-        self.user_name = user_name
-        self.password = password
-
-    # def __repr__(self):
-    #     return f"Cursist {self.naam} is {self.leeftijd} jaar oud"
+# Load user
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 def get_db():
@@ -57,10 +41,10 @@ def get_db():
         db2 = g._database = sqlite3.connect(DATABASE)
     return db2
 
+
 @app.route('/', methods=('GET', 'POST'))
 def index():
-    db2 = get_db().cursor()
-    movies = db2.execute('select * from movies').fetchall()
+    movies = Movie.query.all()
     form = InfoForm()
     if form.validate_on_submit():
         email = form.email.data
@@ -71,8 +55,22 @@ def index():
 
 @app.route('/login', methods=('GET', 'POST'))
 def login():
+    form = LoginForm()
+    print('hello')
+    if form.validate_on_submit():
+        print('hello')
+        email = form.email.data
+        password = form.password.data
 
-    return render_template('login.html')
+        user = User.query.filter_by(email=email).first()
+        print(user)
+        if not user or not check_password_hash(user.password, password):
+            flash('Please check your login details')
+            return redirect(url_for('login'))
+
+        login_user(user)
+        return redirect(url_for('index'))
+    return render_template('login.html', form=form)
 
 @app.route('/register', methods=('GET', 'POST'))
 def register():
@@ -82,7 +80,11 @@ def register():
         username = form.user_name.data
         password = form.password.data
 
-        user = User(email, username, password)
+        user = User.query.filter_by(email=email).first()
+        if user:
+            return redirect(url_for('register'))
+
+        user = User(email, username, generate_password_hash(password, method='sha256'))
         db.session.add(user)
         db.session.commit()
         return redirect(url_for('login'))
@@ -91,17 +93,60 @@ def register():
 
 @app.route('/movie/<id>', methods=('GET', 'POST'))
 def movie(id):
-    db2 = get_db().cursor()
-    movie = db2.execute('select * from movies WHERE id = ?;', (id)).fetchone()
-
-    director = db2.execute('select * from directors WHERE id = ?;', (movie[2])).fetchone()
+    movie = Movie.query.get(id)
+    print(movie)
+    director = Director.query.get(movie.director_id)
 
     return render_template('movie.html', movie=movie, director=director)
 
 @app.route('/movie/create', methods=('GET', 'POST'))
+@login_required
 def create_movie():
+    directors = Director.query.all()
+    directors_list = [(i.id, i.first_name + ' ' + i.last_name) for i in directors]
 
-    return render_template('create_movie.html')
+    form = CreateMovieForm()
+    form.director.choices = directors_list
+
+    if form.validate_on_submit():
+        title = form.title.data
+        director = form.director.data
+        release_year = form.release_year.data
+        user_id = current_user.id
+        description = form.description.data
+        youtube_link = form.youtube_link.data
+
+        movie = Movie(title, director, release_year, user_id, description, youtube_link)
+        db.session.add(movie)
+        db.session.commit()
+        movie_id = movie.id
+        flash('Film aangemaakt')
+        return redirect(url_for('movie', id=movie_id))
+
+    return render_template('create_movie.html', form=form)
+
+@app.route('/movies/edit')
+@login_required
+def edit_movies_panel():
+    movies = Movie.query.all()
+    return render_template('edit_movie_panel.html', movies=movies)
+
+
+@app.route('/edit/movie/<id>', methods=('GET', 'POST'))
+@login_required
+def edit_movie(id):
+    movie = Movie.query.get(id)
+    form = CreateMovieForm
+    if form.validate_on_submit():
+        return 'hoi'
+    return render_template('edit_movie.html', movie=movie, form=form)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)
