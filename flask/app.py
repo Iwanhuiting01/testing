@@ -33,6 +33,11 @@ login_manager.init_app(app)
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+def get_update_query(table_name, where_vals, update_vals):
+  query = table_name.update()
+  for k, v in where_vals.iteritems():
+    query = query.where(getattr(table_name.c, k) == v)
+  return query.values(**update_vals)
 
 def get_db():
     DATABASE = '../filmfan.db'
@@ -94,10 +99,23 @@ def register():
 @app.route('/movie/<id>', methods=('GET', 'POST'))
 def movie(id):
     movie = Movie.query.get(id)
-    print(movie)
-    director = Director.query.get(movie.director_id)
+    comments = movie.comments
+    comments.reverse()
+    form = PostComment()
 
-    return render_template('movie.html', movie=movie, director=director)
+    if form.validate_on_submit():
+        body = form.body.data
+        user_id = current_user.id
+        movie_id = id
+
+        comment = Comment(body, movie_id, user_id)
+        db.session.add(comment)
+        db.session.commit()
+
+        flash('Comment gepost')
+        return redirect(url_for('movie', id=movie.id))
+
+    return render_template('movie.html', movie=movie, form=form, comments=comments)
 
 @app.route('/movie/create', methods=('GET', 'POST'))
 @login_required
@@ -131,15 +149,50 @@ def edit_movies_panel():
     movies = Movie.query.all()
     return render_template('edit_movie_panel.html', movies=movies)
 
+@app.route('/delete/movie/<id>')
+@login_required
+def delete_movie(id):
+    movie = Movie.query.get(id)
+    db.session.delete(movie)
+    db.session.commit()
+    return redirect(url_for('edit_movies_panel'))
 
 @app.route('/edit/movie/<id>', methods=('GET', 'POST'))
 @login_required
 def edit_movie(id):
     movie = Movie.query.get(id)
-    form = CreateMovieForm
+    form = EditMovieForm(director=movie.director_id)
+
+    directors = Director.query.all()
+    movie.director = Director.query.get(movie.director_id)
+    directors_list = [(i.id, i.first_name + ' ' + i.last_name) for i in directors]
+
+    form.director.choices = directors_list
+
     if form.validate_on_submit():
-        return 'hoi'
-    return render_template('edit_movie.html', movie=movie, form=form)
+        title = form.title.data
+        director = form.director.data
+        release_year = form.release_year.data
+        user_id = current_user.id
+        description = form.description.data
+        youtube_link = form.youtube_link.data
+
+        movie.title = title
+        movie.director_id = director
+        movie.release_year = release_year
+        movie.user_id = user_id
+        movie.description = description
+        movie.youtube_link = youtube_link
+
+        db.session.add(movie)
+        db.session.commit()
+        movie_id = movie.id
+        flash('Film aangepast')
+        return redirect(url_for('movie', id=movie_id))
+    else:
+        form.description.data = movie.description
+
+    return render_template('edit_movie.html', movie=movie, form=form, directors=directors)
 
 
 @app.route('/logout')

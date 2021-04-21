@@ -27,7 +27,18 @@
                     <td>
                        <ul class="uk-iconnav">
                             <li><a href="/edit/movie/{{ movie.id }}" uk-icon="icon: file-edit"></a></li>
-                            <li><a href="/delete/movie/{{ movie.id }}" uk-icon="icon: trash"></a></li>
+                            <li><button style="padding: 0;border: none; background: none; color: gray" uk-icon="icon: trash" class="uk-button uk-button-default uk-margin-small-right" type="button" uk-toggle="target: #modal-example{{ movie.id }}"></button></li>
+                           <!-- This is the modal -->
+                            <div id="modal-example{{ movie.id }}" uk-modal>
+                                <div class="uk-modal-dialog uk-modal-body">
+                                    <h2 class="uk-modal-title"><b>KIJK UIT</b></h2>
+                                    <p><b>WEET JE ZEKER DAT JE DEZE FILM WILT VERWIJDEREN?</b></p>
+                                    <p class="uk-text-left">
+                                        <button class="uk-button uk-button-default uk-modal-close" type="button">ANNULEREN</button>
+                                        <a href="/delete/movie/{{ movie.id }}" uk-icon="icon: trash"></a>
+                                    </p>
+                                </div>
+                            </div>
                         </ul>
                     </td>
                 </tr>
@@ -37,7 +48,6 @@
 
     </div>
 </div>
-
 
 
 {% include "footer.html" %}

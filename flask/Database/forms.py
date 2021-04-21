@@ -27,4 +27,15 @@ class CreateMovieForm(FlaskForm):
     director = SelectField('Regisseur', coerce=str, validators=[InputRequired()])
     release_year = StringField('Jaar:', validators=[DataRequired()],  render_kw={"placeholder": "Jaar"})
     description = TextAreaField('Beschrijving:', validators=[DataRequired()],  render_kw={"placeholder": "Beschrijving"})
-    youtube_link = StringField('Link:', validators=[DataRequired()],  render_kw={"placeholder": "Youtube_link"})
+    youtube_link = StringField('Link:', validators=[DataRequired()],  render_kw={"placeholder": "Youtube id (na watch?v=)"})
+
+class EditMovieForm(FlaskForm):
+    title = StringField('Titel:', validators=[DataRequired()],  render_kw={"placeholder": "Naam"})
+    director = SelectField('Regisseur', coerce=str, validators=[InputRequired()])
+    release_year = StringField('Jaar:', validators=[DataRequired()],  render_kw={"placeholder": "Jaar"})
+    description = TextAreaField('Beschrijving:', validators=[DataRequired()],  render_kw={"placeholder": "Beschrijving"})
+    youtube_link = StringField('Link:', validators=[DataRequired()],  render_kw={"placeholder": "Youtube id (na watch?v=)"})
+
+class PostComment(FlaskForm):
+    body = TextAreaField('Beschrijving:', validators=[DataRequired()],  render_kw={"placeholder": "Beschrijving"})
+    submit = SubmitField('POST COMMENT')
